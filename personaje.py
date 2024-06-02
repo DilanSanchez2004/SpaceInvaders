@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class personaje(ABC):
+class Personaje(ABC):
     def __init__(self, nombre):
         self.nombre = nombre
         self.vida = 1

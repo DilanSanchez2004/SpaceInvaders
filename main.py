@@ -1,49 +1,104 @@
-# Importación de la libreria "game loop"
 import pygame
-
-# Se define el lienzo y su tamaño
+import sys
+from disparo import Bullet
+# Inicialización de pygame
 pygame.init()
-# icono del juego
+
+# Configuración de la pantalla
+screen = pygame.display.set_mode((640, 480))
+
+# Título e icono del juego
+pygame.display.set_caption('Space Invaders')
 pygame_icon = pygame.image.load(
-    'C:\\Users\\user\\Desktop\\Space Invaders\\SpaceInvaders\\sprites\\icono_invader.jpg')
+    'C:\\Users\\user\\Desktop\\Space Invaders\\SpaceInvaders\\sprites\\Icono.png')
 pygame.display.set_icon(pygame_icon)
-pygame.display.set_caption('Space Invaders')  # titulo del juego
-screen = pygame.display.set_mode((640, 480))  # resolucion del juego
+
+# Reloj para controlar la tasa de actualización
 clock = pygame.time.Clock()
+
+# Variables del juego
 running = True
-dt = 0
+Fondo = pygame.image.load(
+    'C:\\Users\\user\\Desktop\\Space Invaders\\SpaceInvaders\\sprites\\Fondo.png')
+playerImg = pygame.image.load(
+    'C:\\Users\\user\\Desktop\\Space Invaders\\SpaceInvaders\\sprites\\Player.png')
+bunkerImg = pygame.image.load(
+    'C:\\Users\\user\\Desktop\\Space Invaders\\SpaceInvaders\\sprites\\Bunker.png')
+
+playerX = 300
+playerY = 450
+playerX_change = 0
+player_speed = 300  # Pixeles por segundo
+
+# Función para dibujar al jugador
 
 
-player_pos = pygame.Vector2(
-    screen.get_width() / 2, screen.get_height() / 1.08)
+def player(x, y):
+    screen.blit(playerImg, (x, y))
 
-while running:  # ciclo infinito del juego
 
-    # Creacion de lienzo
-    for event in pygame.event.get():  # encuesta para eventos
-        if event.type == pygame.QUIT:  # evento pygame.QUIT significa que el usuario hizo clic en X para cerrar la ventana
+# Función para disparar balas
+def shoot_bullet(playerX, playerY, all_sprites, bullets):
+    bullet = Bullet(playerX, playerY)
+    all_sprites.add(bullet)
+    bullets.add(bullet)
+
+
+# Inicialización de grupos de sprites
+all_sprites = pygame.sprite.Group()
+bullets = pygame.sprite.Group()
+
+
+def bunkers(x, y):
+    screen.blit(bunkerImg, (x, y))
+
+
+while running:
+    # Encuesta de eventos
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                shoot_bullet(playerX + playerImg.get_width() // 2,
+                             playerY, all_sprites, bullets)  # Crear una nueva bala
 
-    screen.fill("black")
-
-    pygame.draw.circle(screen, "white", player_pos, 15)
-
+    # Obtener el estado actual de las teclas
     keys = pygame.key.get_pressed()
-    # if keys[pygame.K_w]:
-    #     player_pos.y -= 300 * dt
-    # if keys[pygame.K_s]:
-    #     player_pos.y += 300 * dt
+    playerX_change = 0
     if keys[pygame.K_a]:
-        player_pos.x -= 300 * dt
+        playerX_change = -player_speed
     if keys[pygame.K_d]:
-        player_pos.x += 300 * dt
-    # llenar la pantalla con un color para borrar cualquier cosa del último fotograma
+        playerX_change = player_speed
 
-    # RENDER YOUR GAME HERE
+    # Actualizar la posición del jugador
+    dt = clock.tick(60) / 1000  # Calcular el tiempo transcurrido en segundos
+    playerX += playerX_change * dt
 
-    # flip() la pantalla para poner tu trabajo en pantalla
-    pygame.display.flip()
+    # Asegurarse de que el jugador no se salga de los límites de la pantalla
+    if playerX < 0:
+        playerX = 0
+    elif playerX > 640 - playerImg.get_width():
+        playerX = 640 - playerImg.get_width()
 
-    dt = clock.tick(60) / 1000  # limite de FPS a 60
+    # Rellenar la pantalla con el fondo
+    screen.blit(Fondo, (-30, 0))
+
+    # Dibujar al jugador en la nueva posición
+    player(playerX, playerY)
+
+    # Dibujar los bunkers
+    bunkers(70, 390)
+    bunkers(180, 390)
+    bunkers(290, 390)
+    bunkers(400, 390)
+    bunkers(510, 390)
+
+    # Actualizar y dibujar todos los sprites
+    all_sprites.update()
+    all_sprites.draw(screen)
+
+    # Actualizar la pantalla
+    pygame.display.update()
 
 pygame.quit()
